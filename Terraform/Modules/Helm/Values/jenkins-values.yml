@@ -1,0 +1,17 @@
+persistence:
+  enabled: true
+  existingClaim: "jenkins-persistent-pvc"
+  size: 10Gi
+  storageClass: "gp3"
+  accessModes:
+    - ReadWriteOnce
+controller:
+  admin:
+    username: "philo"
+    password: "philo"
+  nodeSelector:
+    topology.kubernetes.io/zone: "us-east-1a"
+  # jenkinsUriPrefix: "/jenkins"  
+  additionalPlugins:
+  - github:1.43.0
+  - github-api:1.321-488.v9b_c0da_9533f8
