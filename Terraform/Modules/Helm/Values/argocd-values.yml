@@ -1,0 +1,7 @@
+crds:
+  install: true
+  keep: true
+
+configs:
+  secret:
+    argocdServerAdminPassword: "$2a$10$IJ.dFNBRSEgdDiV2mxY5OOTDEI1IqNa241q5SnRjDMnNbqpuVl4P6"
