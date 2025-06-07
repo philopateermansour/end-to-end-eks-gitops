@@ -1,0 +1,25 @@
+prometheus:  
+  prometheusSpec:  
+    storageSpec: 
+      volumeClaimTemplate:
+        spec:
+          storageClassName: "gp2"
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+    retention: 7d
+    retentionSize: 5GB
+    serviceMonitorNamespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+            - monitoring
+            - default
+
+grafana:
+  admin:
+    existingSecret: "grafana-auth"
+    userKey: admin-user
+    passwordKey: admin-password
