@@ -1,0 +1,39 @@
+Your '{{ .Chart.Name }}' chart has been deployed.
+Release name: {{ .Release.Name }}
+
+---------------------------------------------------------------------------
+
+### Accessing Your Guestbook Application
+
+Your Ingress is configured to route traffic to your application.
+
+1.  If you have a DNS entry for '{{ .Values.ingress.host }}' that points to your Ingress Controller's IP address, you can access the application at:
+
+    http://{{ .Values.ingress.host }}
+
+2.  If you are testing locally (e.g., on Minikube with the Ingress addon enabled) or don't have DNS set up, you may need to find your Ingress IP and access it directly.
+
+---------------------------------------------------------------------------
+
+###  IMPORTANT: How to Update Your Passwords
+
+It is recommended to use the `helm upgrade` command with the `--set-string` flag to avoid saving plain-text passwords in your `values.yaml` file.
+
+**Example: How to change the MySQL user password:**
+
+1.  Run the upgrade command with your new password:
+    helm upgrade --install {{ .Release.Name }} . --set-string secrets.mysqlUserPassword="YOUR_NEW_STRONG_PASSWORD"
+
+2.  After the upgrade, the Kubernetes Secret will be updated. You must now manually restart your backend and database pods to force them to use the new password.
+    kubectl rollout restart deployment {{ .Release.Name }}-backend
+    kubectl rollout restart statefulset {{ .Release.Name }}-mysql
+
+
+**Example: How to change the Redis password:**
+
+1.  Run the upgrade command:
+    helm upgrade --install {{ .Release.Name }} . --set-string secrets.redisPassword="YOUR_NEW_REDIS_PASSWORD"
+
+2.  Restart the pods that use the Redis password:
+    kubectl rollout restart deployment {{ .Release.Name }}-redis
+    kubectl rollout restart deployment {{ .Release.Name }}-backend

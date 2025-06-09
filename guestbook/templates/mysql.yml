@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-mysql-service
+spec:
+  ports:
+  - port: {{ .Values.mysql.service.port }}
+  selector:
+    app.kubernetes.io/component: mysql
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-mysql
+  labels:
+    app.kubernetes.io/component: mysql
+spec:
+  serviceName: "{{ .Release.Name }}-mysql-service"
+  replicas: {{ .Values.mysql.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: mysql
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: mysql
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      
+    spec:
+      nodeSelector:
+        topology.kubernetes.io/zone: {{ .Values.mysql.zone }}
+      containers:
+      - name: mysql
+        image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.mysql.service.port }}
+          name: mysql
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-guestbook-secrets
+                key: MYSQL_ROOT_PASSWORD
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-guestbook-secrets
+                key: MYSQL_USER_PASSWORD
+          - name: MYSQL_DATABASE
+            value: {{ .Values.mysql.auth.database | quote }}
+          - name: MYSQL_USER
+            value: {{ .Values.mysql.auth.username | quote }}
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-mysql-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-mysql-pvc
+  namespace: {{ .Release.Namespace }}
+spec:
+  storageClassName: ""
+  volumeName: {{ .Release.Name }}-mysql-pv
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.mysql.storage }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-mysql-pv
+spec:
+  storageClassName: ""
+  persistentVolumeReclaimPolicy: {{ .Values.mysql.reclaimPolicy }}
+  accessModes:
+    - ReadWriteOnce
+  awsElasticBlockStore:
+    volumeID: {{ .Values.mysql.volumeId }}
+  capacity:
+    storage: {{ .Values.mysql.storage }}
+  claimRef:
+    name: {{ .Release.Name }}-mysql-pvc
+    namespace: {{ .Release.Namespace }}
