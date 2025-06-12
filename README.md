@@ -2,6 +2,10 @@
 
 This project provides an infrastructure-as-code (IaC) solution for deploying the Guestbook application on AWS using Terraform and Helm. It includes modules for networking, security, compute, EKS, and monitoring, as well as Helm charts for deploying the application and its dependencies. Additionally, a Jenkins pipeline is configured to build and push Docker images using Kaniko, and ArgoCD is used for GitOps-based application deployment.
 
+## Architecture
+
+![Architecture](Assets/Architecture.png)
+
 ## Project Structure
 
 ### Terraform
